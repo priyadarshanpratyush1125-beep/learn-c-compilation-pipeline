@@ -1,0 +1,28 @@
+# Preprocessed C files
+build/preprocess/
+
+# Assembly files
+build/assembly/
+
+# Object files
+build/objects/
+
+# Static linking executables
+build/static/
+
+# Dynamic linking executables
+build/dynamic/
+
+# Static and shared libraries
+lib/
+
+# Temporary executable
+calculator
+# GCC temporary files
+*.o
+*.i
+*.s
+
+# Core dumps
+core
+core.*
