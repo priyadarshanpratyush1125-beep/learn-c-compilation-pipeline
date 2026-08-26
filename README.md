@@ -576,3 +576,110 @@ Compiler
 ↓
 
 Assembly
+Stage 3 — Assembly
+
+The assembly code is converted into an object file.
+
+We use:
+
+gcc -c build/assembly/main.s -o build/objects/main.o
+
+Similarly:
+
+gcc -c build/assembly/add.s -o build/objects/add.o
+
+gcc -c build/assembly/sub.s -o build/objects/sub.o
+
+gcc -c build/assembly/mul.s -o build/objects/mul.o
+
+gcc -c build/assembly/div.s -o build/objects/div.o
+
+Now:
+
+.s
+
+↓
+
+gcc -c
+
+↓
+
+.o
+
+The project now contains:
+
+build/objects/
+
+├── main.o
+├── add.o
+├── sub.o
+├── mul.o
+└── div.o
+
+These are object files.
+
+Inspecting Object Files
+
+We can investigate an object file using:
+
+file build/objects/main.o
+
+Example:
+
+main.o: ELF 64-bit LSB relocatable, x86-64, ...
+
+The important word here is:
+
+relocatable
+
+An object file is not yet the final executable.
+
+Inspect ELF Header
+readelf -h build/objects/main.o
+
+This allows us to inspect information such as:
+
+ELF class
+architecture
+object-file type
+entry information
+section information
+Inspect Sections
+readelf -S build/objects/main.o
+
+We can see sections such as:
+
+.text
+
+.data
+
+.bss
+
+.rodata
+
+.symtab
+
+.strtab
+
+.rela.text
+
+The exact sections depend on the compiler and source code.
+
+Inspect Symbols
+nm build/objects/main.o
+
+We can see symbols defined or referenced by the object file.
+
+For example, main.o can contain references to:
+
+add
+
+sub
+
+mul
+
+divide
+
+These functions are implemented in different object files.
+
+This leads us to the next stage.
