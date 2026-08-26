@@ -172,7 +172,9 @@ The main purpose of the project is not calculator development.
 The calculator is used as a practical example for studying the compilation and linking process.
 
 Project Structure
+## Project Structure
 
+```
 .
 ├── build
 │   ├── assembly
@@ -182,20 +184,25 @@ Project Structure
 │   │   ├── mul.s
 │   │   └── sub.s
 │   ├── dynamic
+│   │   └── calculator_dynamic
 │   ├── objects
 │   │   ├── add.o
+│   │   ├── add_pic.o
 │   │   ├── div.o
+│   │   ├── div_pic.o
 │   │   ├── main.o
 │   │   ├── mul.o
-│   │   └── sub.o
+│   │   ├── mul_pic.o
+│   │   ├── sub.o
+│   │   └── sub_pic.o
 │   ├── preprocess
 │   │   ├── add.i
 │   │   ├── div.i
 │   │   ├── main.i
 │   │   ├── mul.i
 │   │   └── sub.i
-│   ├── static
-│   └── ...
+│   └── static
+│       └── calculator_static
 ├── c
 │   ├── inc
 │   │   ├── add.h
@@ -212,7 +219,7 @@ Project Structure
 │   └── libcalculator.so
 ├── main.c
 └── README.md
-
+```
 The source code is separated from generated files.
 
 The inc directory contains function declarations.
