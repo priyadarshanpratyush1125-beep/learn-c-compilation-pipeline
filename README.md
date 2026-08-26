@@ -505,3 +505,74 @@ Preprocessor
 ↓
 
 .i
+Stage 2 — Compilation
+
+Now we convert the preprocessed C code into assembly language.
+
+For example:
+
+gcc -S build/preprocess/main.i -o build/assembly/main.s
+
+And:
+
+gcc -S build/preprocess/add.i -o build/assembly/add.s
+
+gcc -S build/preprocess/sub.i -o build/assembly/sub.s
+
+gcc -S build/preprocess/mul.i -o build/assembly/mul.s
+
+gcc -S build/preprocess/div.i -o build/assembly/div.s
+
+The result is:
+
+.i
+
+↓
+
+gcc -S
+
+↓
+
+.s
+
+For example:
+
+main.i
+
+   │
+
+   ▼
+
+main.s
+
+We can inspect the assembly:
+
+less build/assembly/add.s
+
+Instead of C:
+
+return a + b;
+
+we will see architecture-specific assembly instructions.
+
+Learning
+
+At this stage we learn:
+
+How C code becomes assembly
+What assembly language looks like
+How functions appear in assembly
+How variables and operations are represented
+Why assembly is architecture-dependent
+
+The important idea is:
+
+C source
+
+↓
+
+Compiler
+
+↓
+
+Assembly
