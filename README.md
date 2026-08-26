@@ -1026,3 +1026,511 @@ calculator_dynamic
 The executable does not contain the entire calculator library in the same way as the static-linked version.
 
 The dynamic loader is involved in loading required shared libraries.
+Static vs Dynamic Linking
+
+Now we have two executables:
+
+build/static/calculator_static
+
+build/dynamic/calculator_dynamic
+
+and two libraries:
+
+lib/libcalculator.a
+
+lib/libcalculator.so
+
+We can compare them.
+
+Comparison 1 — File Size
+
+Use:
+
+ls -lh \
+    build/static/calculator_static \
+    build/dynamic/calculator_dynamic \
+    lib/libcalculator.a \
+    lib/libcalculator.so
+
+We can also use:
+
+size build/static/calculator_static
+
+size build/dynamic/calculator_dynamic
+
+The exact numbers depend on:
+
+compiler version
+architecture
+optimization level
+source code
+libraries
+linker options
+
+Therefore, we should measure the files rather than assuming exact sizes.
+
+Comparison 2 — Dependencies
+
+Static version:
+
+ldd build/static/calculator_static
+
+Dynamic version:
+
+ldd build/dynamic/calculator_dynamic
+
+The dynamic version should show:
+
+libcalculator.so
+
+as a runtime dependency.
+
+This demonstrates an important difference:
+
+Static:
+
+Executable ──> contains linked calculator code
+
+Dynamic:
+
+Executable ──> depends on libcalculator.so
+Comparison 3 — ELF Information
+
+Inspect both executables:
+
+readelf -h build/static/calculator_static
+
+readelf -h build/dynamic/calculator_dynamic
+
+Inspect sections:
+
+readelf -S build/static/calculator_static
+
+readelf -S build/dynamic/calculator_dynamic
+
+Inspect the dynamic section:
+
+readelf -d build/static/calculator_static
+
+readelf -d build/dynamic/calculator_dynamic
+
+The dynamic executable will contain dynamic-linking information and shared-library dependency entries.
+
+Comparison 4 — Symbols
+
+Use:
+
+nm build/static/calculator_static
+
+and:
+
+nm build/dynamic/calculator_dynamic
+
+This allows us to investigate how symbols appear in the two executables.
+
+For more detailed symbol information:
+
+readelf -s build/static/calculator_static
+readelf -s build/dynamic/calculator_dynamic
+Static Linking Advantages
+
+Static linking has several advantages.
+
+Self-contained deployment
+
+The application can contain the required library code directly.
+
+application
+
+     │
+
+     └── required library code
+
+This can make deployment simpler because a separate copy of that particular library is not required at runtime.
+
+Predictability
+
+The application is linked against a specific version of the library at build time.
+
+This can be useful when reproducibility and controlled environments are important.
+
+Fewer runtime library concerns
+
+There is less dependence on the runtime presence of the particular application library.
+
+Static Linking Disadvantages
+Larger executable
+
+Library code linked into the executable can increase its size.
+
+Library updates
+
+If the library implementation needs to change, applications generally need to be rebuilt and relinked to incorporate the new static library version.
+
+Duplication
+
+If many applications statically link the same library, each executable can contain its own copy of that library code.
+
+For example:
+
+program A ──> calculator code
+
+program B ──> calculator code
+
+program C ──> calculator code
+
+This can increase storage usage.
+
+Dynamic Linking Advantages
+Smaller application-specific executable
+
+The shared library remains separate from the executable.
+
+program
+
+   │
+
+   └──> shared library
+Library sharing
+
+Multiple processes can use the same shared-library file, and the operating system can share suitable read-only code pages in memory.
+
+Independent library updates
+
+A compatible shared library can often be updated without rebuilding every application that uses it.
+
+Useful for large systems
+
+Shared libraries are common when many applications use the same functionality.
+
+Dynamic Linking Disadvantages
+Runtime dependency
+
+The required shared library must be available and compatible at runtime.
+
+program
+
+   │
+
+   └──> libcalculator.so
+
+If the library cannot be found, the program may fail to start.
+
+Version and ABI compatibility
+
+Updating a shared library can cause problems if the new version is not binary-compatible with applications expecting the old interface.
+
+More runtime complexity
+
+The dynamic loader has to locate and load required shared libraries and perform the required runtime linking work.
+
+Is Dynamic Linking Better?
+
+Not always.
+
+It is better to think of the two approaches as solving different problems.
+
+                 Linking
+
+                    │
+
+          ┌─────────┴─────────┐
+
+          │                   │
+
+       Static              Dynamic
+
+          │                   │
+
+          ▼                   ▼
+
+   Self-contained        Shared library
+
+   executable             dependency
+
+Dynamic linking can be advantageous when:
+
+many applications share the same library
+reducing application-specific executable size matters
+libraries need to be updated independently
+shared memory usage is beneficial
+
+Static linking can be advantageous when:
+
+self-contained deployment is important
+a controlled library version is required
+runtime library availability is a concern
+predictable deployment is more important than sharing
+
+Therefore:
+
+Dynamic linking ≠ always better
+
+Static linking  ≠ always better
+
+The appropriate choice depends on the application and deployment requirements.
+
+Important Clarification About "Static Executable"
+
+In this project, when we say:
+
+calculator_static
+
+we mean that our calculator library is statically linked into the application.
+
+That does not necessarily mean that the entire executable is completely statically linked.
+
+For example, the executable may still dynamically depend on the system C library.
+
+We can investigate this using:
+
+ldd build/static/calculator_static
+
+A completely statically linked executable is a separate experiment and can be produced with options such as:
+
+gcc -static ...
+
+when the required static system libraries are available.
+
+A fully static executable can be considerably larger, so it should not be confused with simply statically linking our own libcalculator.a.
+
+Complete Workflow
+
+The entire project can now be represented as:
+
+                    SOURCE CODE
+
+       ┌────────┬────────┬────────┬────────┬────────┐
+       │        │        │        │        │        │
+    main.c    add.c    sub.c    mul.c    div.c
+       │        │        │        │        │
+       └────────┴────────┴────────┴────────┘
+                         │
+                         │ gcc -E
+                         ▼
+
+                    PREPROCESSING
+
+       main.i  add.i  sub.i  mul.i  div.i
+                         │
+                         │ gcc -S
+                         ▼
+
+                     ASSEMBLY
+
+       main.s  add.s  sub.s  mul.s  div.s
+                         │
+                         │ gcc -c
+                         ▼
+
+                    OBJECT FILES
+
+       main.o  add.o  sub.o  mul.o  div.o
+                         │
+             ┌───────────┴────────────┐
+             │                        │
+             │                        │
+             ▼                        ▼
+
+       STATIC LIBRARY           SHARED LIBRARY
+
+             │                        │
+             ▼                        ▼
+
+     libcalculator.a          libcalculator.so
+             │                        │
+             │                        │
+             ▼                        ▼
+
+      calculator_static       calculator_dynamic
+             │                        │
+             └──────────┬─────────────┘
+                        │
+                        ▼
+
+                   COMPARISON
+
+                        │
+          ┌─────────────┼─────────────┐
+          │             │             │
+         size           ldd         readelf
+          │             │             │
+          └─────────────┼─────────────┘
+                        │
+                        ▼
+
+                FINAL OBSERVATIONS
+Commands Learned
+Preprocessing
+gcc -E source.c -Ic/inc -o source.i
+Compilation to Assembly
+gcc -S source.i -o source.s
+Assembly to Object
+gcc -c source.s -o source.o
+Static Library
+ar rcs libcalculator.a *.o
+Position Independent Code
+gcc -fPIC -c source.c -Ic/inc -o source.o
+Shared Library
+gcc -shared *.o -o libcalculator.so
+Linking
+gcc main.o -Llib -lcalculator -o calculator
+ELF Inspection
+file program
+
+readelf -h program
+
+readelf -S program
+
+readelf -s program
+
+readelf -d program
+Symbol Inspection
+nm program
+Dependency Inspection
+ldd program
+Size Inspection
+size program
+
+ls -lh program
+What I Learned
+
+After completing this project, I should be able to explain:
+
+Compilation
+What is preprocessing?
+
+What is compilation?
+
+What is assembly?
+
+What is an object file?
+GCC
+What does gcc -E do?
+
+What does gcc -S do?
+
+What does gcc -c do?
+Object Files
+What is an ELF object file?
+
+What are ELF sections?
+
+What are symbols?
+
+What is relocation?
+Linking
+What does the linker do?
+
+Why can't main.o execute by itself?
+
+How are symbols resolved?
+Static Linking
+What is a .a file?
+
+How is libcalculator.a created?
+
+How is it linked into an executable?
+Dynamic Linking
+What is a .so file?
+
+Why is -fPIC used?
+
+What does a shared library provide?
+
+What does ldd show?
+
+What does the ELF NEEDED entry mean?
+Comparison
+Why can static executables be larger?
+
+Why can dynamic linking reduce duplication?
+
+Why does dynamic linking introduce runtime dependencies?
+
+Why can static linking be useful for controlled deployment?
+Final Learning
+
+The most important thing learned from this project is that:
+
+gcc program.c -o program
+
+is not one mysterious operation.
+
+It represents a sequence of stages:
+
+Preprocessing
+
+     ↓
+
+Compilation
+
+     ↓
+
+Assembly
+
+     ↓
+
+Linking
+
+For a multi-file program:
+
+multiple .c files
+
+       ↓
+
+multiple .o files
+
+       ↓
+
+library / linking
+
+       ↓
+
+ELF executable
+
+And linking can be performed using different strategies:
+
+Static Linking
+
+      ↓
+
+library code incorporated during linking
+
+Dynamic Linking
+
+      ↓
+
+shared library remains a runtime dependency
+
+Understanding these stages makes it easier to understand GCC, ELF binaries, libraries, linkers, loaders, and Linux systems programming.
+
+Future Experiments
+
+After completing the basic project, the following experiments can be added:
+
+1. Compare -O0 and -O2
+
+2. Compare executable sizes
+
+3. Inspect .text, .data and .bss
+
+4. Investigate symbols using nm
+
+5. Investigate relocations using readelf
+
+6. Inspect assembly generated with different optimization levels
+
+7. Add more functions to the library
+
+8. Compare static and shared libraries after increasing library size
+
+9. Investigate what happens when libcalculator.so is removed
+
+10. Investigate library search paths
+
+11. Experiment with RPATH and LD_LIBRARY_PATH
+
+12. Investigate a completely statically linked executable
+
+The project can therefore start with a simple calculator and gradually become an experiment in GCC, ELF, static linking, dynamic linking, and Linux binary analysis.
