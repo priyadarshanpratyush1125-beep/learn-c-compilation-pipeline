@@ -1,23 +1,26 @@
 # Preprocessed C files
-build/preprocess/
+build/preprocess/*.i
 
 # Assembly files
-build/assembly/
+build/assembly/*.s
 
 # Object files
-build/objects/
+build/objects/*.o
 
 # Static linking executables
-build/static/
+build/static/*
+!build/static/.gitkeep
 
 # Dynamic linking executables
-build/dynamic/
+build/dynamic/*
+!build/dynamic/.gitkeep
 
 # Static and shared libraries
-lib/
+lib/*
 
 # Temporary executable
 calculator
+
 # GCC temporary files
 *.o
 *.i
