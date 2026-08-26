@@ -173,10 +173,7 @@ The calculator is used as a practical example for studying the compilation and l
 
 Project Structure
 
-The project structure is:
-
 .
-
 ├── build
 │   ├── assembly
 │   │   ├── add.s
@@ -197,7 +194,8 @@ The project structure is:
 │   │   ├── main.i
 │   │   ├── mul.i
 │   │   └── sub.i
-│   └── static
+│   ├── static
+│   └── ...
 ├── c
 │   ├── inc
 │   │   ├── add.h
