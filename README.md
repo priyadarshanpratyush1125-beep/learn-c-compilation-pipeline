@@ -900,3 +900,129 @@ calculator_static
 └──────────────────────┘
 
 The executable therefore contains the calculator library code it needs.
+Dynamic Linking
+
+Now we create a shared library.
+
+A shared library normally has the extension:
+
+.so
+
+Before creating it, the library source should be compiled as position-independent code.
+
+For example:
+
+gcc -fPIC -c c/src/add.c -Ic/inc -o build/objects/add_pic.o
+
+gcc -fPIC -c c/src/sub.c -Ic/inc -o build/objects/sub_pic.o
+
+gcc -fPIC -c c/src/mul.c -Ic/inc -o build/objects/mul_pic.o
+
+gcc -fPIC -c c/src/div.c -Ic/inc -o build/objects/div_pic.o
+
+Now create the shared library:
+
+gcc -shared \
+    build/objects/add_pic.o \
+    build/objects/sub_pic.o \
+    build/objects/mul_pic.o \
+    build/objects/div_pic.o \
+    -o lib/libcalculator.so
+
+Now:
+
+add_pic.o
+
+sub_pic.o
+
+mul_pic.o
+
+div_pic.o
+
+       │
+
+       │ gcc -shared
+
+       ▼
+
+libcalculator.so
+Dynamically Linked Executable
+
+Now link main.o against the shared library:
+
+gcc build/objects/main.o \
+    -Llib \
+    -lcalculator \
+    -Wl,-rpath,'$ORIGIN/../../lib' \
+    -o build/dynamic/calculator_dynamic
+
+The result is:
+
+main.o
+
+   │
+
+   │
+
+   ▼
+
+libcalculator.so
+
+   │
+
+   │ dynamic linking
+
+   ▼
+
+calculator_dynamic
+
+The runtime executable knows that it depends on the shared library.
+
+Checking Dynamic Dependencies
+
+Use:
+
+ldd build/dynamic/calculator_dynamic
+
+You should see an entry for:
+
+libcalculator.so
+
+along with the normal system libraries required by the executable.
+
+We can also inspect the ELF dynamic section:
+
+readelf -d build/dynamic/calculator_dynamic
+
+Look for:
+
+NEEDED
+
+This indicates shared-library dependencies recorded in the executable.
+
+What Does Dynamic Linking Mean?
+
+With dynamic linking, the shared library remains a separate file.
+
+Conceptually:
+
+calculator_dynamic
+
+┌──────────────────────┐
+│ main                 │
+│ references calculator│
+└──────────┬───────────┘
+           │
+           │ runtime dependency
+           ▼
+┌──────────────────────┐
+│ libcalculator.so     │
+│ add                  │
+│ sub                  │
+│ mul                  │
+│ divide               │
+└──────────────────────┘
+
+The executable does not contain the entire calculator library in the same way as the static-linked version.
+
+The dynamic loader is involved in loading required shared libraries.
