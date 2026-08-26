@@ -683,3 +683,81 @@ divide
 These functions are implemented in different object files.
 
 This leads us to the next stage.
+Stage 4 — Linking
+
+At this point we have:
+
+main.o
+
+add.o
+
+sub.o
+
+mul.o
+
+div.o
+
+But these object files are separate.
+
+For example:
+
+main.o
+
+   │
+
+   ├── references add()
+
+   ├── references sub()
+
+   ├── references mul()
+
+   └── references divide()
+
+while:
+
+add.o      → defines add()
+
+sub.o      → defines sub()
+
+mul.o      → defines mul()
+
+div.o      → defines divide()
+
+The linker resolves these references and combines the required object code into an executable.
+
+Normal Object-File Linking
+
+Before creating libraries, we can directly link the object files:
+
+gcc build/objects/main.o \
+    build/objects/add.o \
+    build/objects/sub.o \
+    build/objects/mul.o \
+    build/objects/div.o \
+    -o build/calculator
+
+Now:
+
+.o files
+
+   │
+
+   │ linker
+
+   ▼
+
+executable
+
+Run:
+
+./build/calculator
+
+Output:
+
+Addition       : 25
+
+Subtraction    : 15
+
+Multiplication : 100
+
+Division       : 4
