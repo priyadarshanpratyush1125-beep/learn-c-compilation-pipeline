@@ -761,3 +761,142 @@ Subtraction    : 15
 Multiplication : 100
 
 Division       : 4
+Static Linking
+
+Now we introduce a static library.
+
+A static library normally has the extension:
+
+.a
+
+We create:
+
+libcalculator.a
+
+from:
+
+add.o
+
+sub.o
+
+mul.o
+
+div.o
+
+Use:
+
+ar rcs lib/libcalculator.a \
+    build/objects/add.o \
+    build/objects/sub.o \
+    build/objects/mul.o \
+    build/objects/div.o
+
+Now:
+
+add.o
+
+sub.o
+
+mul.o
+
+div.o
+
+    │
+
+    │ ar
+
+    ▼
+
+libcalculator.a
+Static Linking the Application
+
+Now we link main.o with the static library:
+
+gcc build/objects/main.o \
+    -Llib \
+    -lcalculator \
+    -o build/static/calculator_static
+
+The linker finds:
+
+lib/libcalculator.a
+
+and uses the required library code while producing the executable.
+
+The result is:
+
+main.o
+
+    │
+
+    │
+
+    ▼
+
+libcalculator.a
+
+    │
+
+    │ static linking
+
+    ▼
+
+calculator_static
+
+Run:
+
+./build/static/calculator_static
+
+Output:
+
+Addition       : 25
+
+Subtraction    : 15
+
+Multiplication : 100
+
+Division       : 4
+Inspecting the Static Executable
+
+Check its size:
+
+size build/static/calculator_static
+
+Check its type:
+
+file build/static/calculator_static
+
+Inspect symbols:
+
+nm build/static/calculator_static
+
+We can also inspect the ELF sections:
+
+readelf -S build/static/calculator_static
+What Does Static Linking Mean?
+
+With a static library, the linker obtains the required code from the .a archive and incorporates it into the executable.
+
+Conceptually:
+
+libcalculator.a
+
+       │
+
+       │ linker
+
+       ▼
+
+calculator_static
+
+calculator_static
+
+┌──────────────────────┐
+│ main                 │
+│ add                  │
+│ sub                  │
+│ mul                  │
+│ divide               │
+└──────────────────────┘
+
+The executable therefore contains the calculator library code it needs.
